@@ -78,7 +78,7 @@ Whenever you need to leave a comment for other developers to find you should do 
 
 
 ## Thanks to
-
+- [@Patoke](https://github.com/Patoke)
 - [@rspforhp](https://www.github.com/octokatherine) for their amazing work decompiling the 0.9.9 version of PvZ
 - [@ruslan831](https://github.com/ruslan831) for archiving the [0.9.9 decompilation of PvZ](https://github.com/ruslan831/PlantsVsZombies-decompilation)
 - The GLFW team for their amazing work
