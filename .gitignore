@@ -1,0 +1,12 @@
+# Visual Studio files
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.suo
+*.user
+*.userosscache
+*.suo
+*.sdf
+*.ncb
+*.suo
+*.suo
