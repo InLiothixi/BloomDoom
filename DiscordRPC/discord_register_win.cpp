@@ -1,5 +1,5 @@
-#include "../../Lawn/System/discord_rpc.h"
-#include "../../Lawn/System/discord_register.h"
+#include "../Lawn/System/discord_rpc.h"
+#include "../Lawn/System/discord_register.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMCX

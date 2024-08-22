@@ -1,16 +1,16 @@
-Exception: Access Violation (code 0xc0000005) at address 00602C4F in thread 6390
-Module: LawnProject.exe
-Logical Address: 0001:00151C4F
+Unknown exception: (code 0xe06d7363) at address 77041072 in thread 1FB4
+Module: KERNELBASE.dll
+Logical Address: 0001:00140072
 
-0115E7F4 00602C4F GameButton::IsMouseOver+F
-Params: 95C15342 004B139D 004B139D 00EBB000
+00BDEF44 77041072 RaiseException+62
+Params: E06D7363 00000001 00000003 00BDEF5C
 
 StackWalk failed (error 299)
 
-EAX:00000000 EBX:00EBB000 ECX:00000000 EDX:1E1F6CA8 ESI:004B139D EDI:004B139D
-EIP:00602C4F ESP:0115E7A0  EBP:0115E7F4
+EAX:00BDEEE8 EBX:00D69000 ECX:00000003 EDX:00000000 ESI:16947694 EDI:00BDF688
+EIP:77041072 ESP:00BDEEE8  EBP:00BDEF44
 CS:0023 SS:002B DS:002B ES:002B FS:0053 GS:002B
-Flags:00010216
+Flags:00000216
 
 Windows Ver: NT 6.2  Build 9200
 DDraw Ver: 10.0.19041.1
@@ -18,8 +18,8 @@ DSound Ver: 10.0.19041.1
 
 Product: PlantsVsZombies
 Version:  V1.3.0.001
-Time Loaded: 00:00:30
+Time Loaded: 00:23:40
 Fullscreen: No
-Primary ThreadId: 6390
+Primary ThreadId: 1FB4
 Times Played: 0
 

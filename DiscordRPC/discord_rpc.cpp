@@ -1,7 +1,7 @@
-#include "../../Lawn/System/discord_rpc.h"
+#include "../Lawn/System/discord_rpc.h"
 
 #include "backoff.h"
-#include "../../Lawn/System/discord_register.h"
+#include "../Lawn/System/discord_register.h"
 #include "msg_queue.h"
 #include "rpc_connection.h"
 #include "serialization.h"

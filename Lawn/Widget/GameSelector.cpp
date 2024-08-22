@@ -247,7 +247,7 @@ GameSelector::GameSelector(LawnApp* theApp)
 	mSelectorReanimID = mApp->ReanimationGetID(aSelectorReanim);
 	mSelectorState = SelectorAnimState::SELECTOR_OPEN;
 	int aFrameStart, aFrameCount;
-	aSelectorReanim->GetFramesForLayer("anim_idle", aFrameStart, aFrameCount);
+	aSelectorReanim->GetFramesForLayer("anim_sign", aFrameStart, aFrameCount);
 	aSelectorReanim->mFrameBasePose = aFrameStart + aFrameCount - 1;
 
 	for (int i = 0; i < 6; i++)
@@ -889,7 +889,6 @@ void GameSelector::Update()
 	case SelectorAnimState::SELECTOR_SHOW_SIGN:
 		if (aSelectorReanim->mLoopCount > 0)
 		{
-			aSelectorReanim->PlayReanim("anim_idle", ReanimLoopType::REANIM_LOOP, 0, 3);
 			mSelectorState = SelectorAnimState::SELECTOR_IDLE;
 		}
 		break;
@@ -914,8 +913,11 @@ void GameSelector::Update()
 			}
 		}
 		else if (aCloudReanim->mLoopCount > 0)
+		{
 			mCloudCounter[i] = RandRangeInt(2000, 4000);
+		}
 	}
+
 	aSelectorReanim->Update();
 
 	Reanimation* aLeafReanim = mApp->ReanimationGet(mLeafReanimID);
