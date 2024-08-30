@@ -398,6 +398,8 @@ void SyncBoard(SaveGameContext& theContext, Board* theBoard)
 		}
 	}
 
+	theContext.SyncBytes(&theBoard->mDarknessCounter, sizeof(int));
+
 	theContext.SyncBytes(theBoard->mCursorObject, sizeof(CursorObject));
 	theContext.SyncBytes(theBoard->mCursorPreview, sizeof(CursorPreview));
 	theContext.SyncBytes(theBoard->mAdvice, sizeof(MessageWidget));

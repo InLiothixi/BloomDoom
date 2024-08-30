@@ -54,7 +54,9 @@ NewOptionsDialog::NewOptionsDialog(LawnApp* theApp, bool theFromGameSelector) :
     mMusicVolumeSlider->SetValue(aMusicVolume);
 
     mSfxVolumeSlider = new Slider(IMAGE_OPTIONS_SLIDERSLOT, IMAGE_OPTIONS_SLIDERKNOB2, NewOptionsDialog::NewOptionsDialog_SoundVolume, this);
-    mSfxVolumeSlider->SetValue((int)(theApp->GetSfxVolume() / 0.65f));
+    double aSFXVolume = theApp->GetSfxVolume() / 0.65;
+    aSFXVolume = max(0.0, min(1.0, aSFXVolume));
+    mSfxVolumeSlider->SetValue(aSFXVolume);
 
     mFullscreenCheckbox = MakeNewCheckbox(NewOptionsDialog::NewOptionsDialog_Fullscreen, this, !theApp->mIsWindowed);
     mHardwareAccelerationCheckbox = MakeNewCheckbox(NewOptionsDialog::NewOptionsDialog_HardwareAcceleration, this, theApp->mFake3DAcceleration);
@@ -228,7 +230,7 @@ void NewOptionsDialog::Draw(Sexy::Graphics* g)
     TodDrawString(g, _S("Music"), mMusicVolumeSlider->mX - 13, 140 + aMusicOffset, FONT_DWARVENTODCRAFT18, aTextColor, DrawStringJustification::DS_ALIGN_RIGHT);
     TodDrawString(g, _S(to_string((int)(mApp->GetMusicVolume() * 100)) + "%"), mMusicVolumeSlider->mX + 135 + 13, 140 + aSfxOffset, FONT_DWARVENTODCRAFT18, aTextColor, DrawStringJustification::DS_ALIGN_LEFT);
     TodDrawString(g, _S("Sound"), mSfxVolumeSlider->mX - 13, 167 + aSfxOffset, FONT_DWARVENTODCRAFT18, aTextColor, DrawStringJustification::DS_ALIGN_RIGHT);
-    TodDrawString(g, _S(to_string((int)(mApp->GetSfxVolume() / 0.65f * 100)) + "%"), mSfxVolumeSlider->mX + 135 + 13, 167 + aSfxOffset, FONT_DWARVENTODCRAFT18, aTextColor, DrawStringJustification::DS_ALIGN_LEFT);
+    TodDrawString(g, _S(to_string((int)(mApp->GetSfxVolume() / 0.65 * 100)) + "%"), mSfxVolumeSlider->mX + 135 + 13, 167 + aSfxOffset, FONT_DWARVENTODCRAFT18, aTextColor, DrawStringJustification::DS_ALIGN_LEFT);
     TodDrawString(g, _S("3D Acceleration"), 274, 197 + a3DAccelOffset, FONT_DWARVENTODCRAFT18, aTextColor, DrawStringJustification::DS_ALIGN_RIGHT);
     TodDrawString(g, _S("Full Screen"), 274, 229 + aFullScreenOffset, FONT_DWARVENTODCRAFT18, aTextColor, DrawStringJustification::DS_ALIGN_RIGHT);
     

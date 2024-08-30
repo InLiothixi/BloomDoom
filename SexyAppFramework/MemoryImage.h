@@ -61,6 +61,8 @@ public:
 
 	void					NormalBlt(Image* theImage, int theX, int theY, const Rect& theSrcRect, const Color& theColor);
 	void					AdditiveBlt(Image* theImage, int theX, int theY, const Rect& theSrcRect, const Color& theColor);
+
+	//Darkness
 	void					EraseBlt(Image* theImage, int theX, int theY, const Rect& theSrcRect, const Color& theColor);
 
 	void					NormalDrawLine(double theStartX, double theStartY, double theEndX, double theEndY, const Color& theColor);

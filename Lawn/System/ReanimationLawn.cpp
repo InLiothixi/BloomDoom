@@ -388,7 +388,6 @@ MemoryImage* ReanimatorCache::MakeCachedZombieFrame(ZombieType theZombieType)
 			aReanim.SetFramesForLayer("anim_walk2");
 		
 		Zombie::SetupReanimLayers(&aReanim, aUseZombieType);
-		aReanim.AssignRenderGroupToPrefix("Zombie_diver", RENDER_GROUP_HIDDEN);
 
 		switch (theZombieType)
 		{
@@ -407,19 +406,20 @@ MemoryImage* ReanimatorCache::MakeCachedZombieFrame(ZombieType theZombieType)
 			}
 			case ZombieType::ZOMBIE_PEA_HEAD:
 			{
-				
 				aReanim.AssignRenderGroupToPrefix("anim_hair", -1);
 				aReanim.AssignRenderGroupToPrefix("anim_head2", -1);
 
 				ReanimatorTrackInstance* headTrackInst = aReanim.GetTrackInstanceByName("anim_head1");
 				headTrackInst->mImageOverride = IMAGE_BLANK;
-				ReanimatorTrackInstance* aTrackInstance = aReanim.GetTrackInstanceByName("Zombie_body");
-				
-				Reanimation* aPlantHead = mApp->AddReanimation(aPosX, aPosY, 0, ReanimationType::REANIM_PEASHOOTER);
-				aPlantHead->SetFramesForLayer("anim_head_idle");
-				AttachEffect* aAttachEffect = AttachReanim(headTrackInst->mAttachmentID, aPlantHead, 0.0f, 0.0f);
-				aReanim.mFrameBasePose = 0;
-				aPlantHead->Draw(&aMemoryGraphics);
+				ReanimatorTrackInstance* bodyTrackInst = aReanim.GetTrackInstanceByName("Zombie_body");
+
+				Reanimation aPlantHeadReanim;
+				aPlantHeadReanim.ReanimationInitializeType(aPosX + 65, aPosY - 5, ReanimationType::REANIM_PEASHOOTER);
+				aPlantHeadReanim.PlayReanim("anim_head_idle", ReanimLoopType::REANIM_LOOP, 0, 15.0f);
+				AttachEffect* aAttachEffect = AttachReanim(bodyTrackInst->mAttachmentID, &aPlantHeadReanim, 0.0f, 0.0f);
+				aPlantHeadReanim.mFrameBasePose = 0;
+				TodScaleRotateTransformMatrix(aAttachEffect->mOffset, 65.0f, -5.0f, 0.2f, -1.0f, 1.0f);
+				aPlantHeadReanim.Draw(&aMemoryGraphics);
 				break;
 			}
 			case ZombieType::ZOMBIE_WALLNUT_HEAD:
@@ -517,8 +517,7 @@ MemoryImage* ReanimatorCache::MakeCachedZombieFrame(ZombieType theZombieType)
 				break;
 			}
 		}
-		
-		
+	
 		aReanim.Draw(&aMemoryGraphics);
 	}
 	else if (aZombieDef.mReanimationType == ReanimationType::REANIM_BOSS)
@@ -556,6 +555,7 @@ MemoryImage* ReanimatorCache::MakeCachedZombieFrame(ZombieType theZombieType)
 		{
 			aPosY = 60.0f;
 		}
+		
 
 		if (theZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR)
 		{
@@ -565,6 +565,26 @@ MemoryImage* ReanimatorCache::MakeCachedZombieFrame(ZombieType theZombieType)
 			Zombie::SetupReanimLayers(&aReanim, aUseZombieType);
 			ReanimatorTrackInstance* aTrackInstance = aReanim.GetTrackInstanceByName("anim_head1");
 			aTrackInstance->mImageOverride = IMAGE_REANIM_ZOMBIE_GARGANTUAR_HEAD_REDEYE;
+			aReanim.Draw(&aMemoryGraphics);
+		}
+		else if (theZombieType == ZombieType::ZOMBIE_BALLOON)
+		{
+			Reanimation aReanim;
+			aReanim.ReanimationInitializeType(aPosX, aPosY, aZombieDef.mReanimationType);
+			Reanimation aPropellerReanim;
+			aPropellerReanim.ReanimationInitializeType(aPosX, aPosY, aZombieDef.mReanimationType);
+			aPropellerReanim.SetFramesForLayer("Propeller");
+			aPropellerReanim.mLoopType = ReanimLoopType::REANIM_LOOP_FULL_LAST_FRAME;
+			aPropellerReanim.AttachToAnotherReanimation(&aReanim, "hat");
+
+			aReanim.Draw(&aMemoryGraphics);
+			aPropellerReanim.Draw(&aMemoryGraphics);
+		}
+		else if (theZombieType == ZOMBIE_SNORKEL)
+		{
+			Reanimation aReanim;
+			aReanim.ReanimationInitializeType(aPosX, aPosY, aZombieDef.mReanimationType);
+			aReanim.AssignRenderGroupToPrefix("Zombie_diver", RENDER_GROUP_HIDDEN);
 			aReanim.Draw(&aMemoryGraphics);
 		}
 		else {

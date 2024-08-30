@@ -963,6 +963,15 @@ void CutScene::StartLevelIntro()
 		mFogTime = 0;
 	}
 
+	if (mApp->mGameMode == GAMEMODE_CHALLENGE_LIGHTS_OUT)
+	{
+		mBoard->mDarknessCounter = 550;
+	}
+	else {
+		if (mBoard->mDarknessCounter > 0)
+			mBoard->mDarknessCounter = max(mBoard->mDarknessCounter - 10, 0);
+	}
+
 	if (mApp->IsFinalBossLevel() || mApp->mGameMode == GAMEMODE_CHALLENGE_AIR_RAID || mApp->mGameMode == GAMEMODE_CHALLENGE_GRAVEYARD_ENCOUNTER)
 	{
 		mBossTime = 4000;

@@ -12,9 +12,7 @@
 #include "../SexyAppFramework/D3DInterface.h"
 #include "../SexyAppFramework/DDImage.h"
 
-Bush::Bush() {
-
-}
+Bush::Bush() {}
 
 const ReanimationType grassBushes[] = {
 	ReanimationType::REANIM_BUSHES3,
@@ -27,13 +25,8 @@ const ReanimationType grassBushes[] = {
 
 void Bush::BushInitialize(int x, int y, int daID, bool isNight, int mRow)
 {
-	int id = (daID + 3) % 3;
-	if (isNight)
-		id += 3;
-	mId = id;
-	mDead = false;
-	mX = x;
-	mY = y;
+	int id = (daID + 3) % 3;	if (isNight)	id += 3;
+	mX = x;	mY = y;	mId = id;
 
 	mRenderOrder = Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_ZOMBIE, mRow, 9);
 	Reanimation* mReanim = mApp->AddReanimation(x, y, mRenderOrder, grassBushes[id]);
@@ -45,60 +38,32 @@ void Bush::BushInitialize(int x, int y, int daID, bool isNight, int mRow)
 
 void Bush::AnimateBush() {
 	Reanimation* mReanim = mApp->ReanimationTryToGet(mReanimID);
-	if (mReanim)
-		mReanim->PlayReanim("anim_rustle", REANIM_PLAY_ONCE_AND_HOLD, 10, RandRangeFloat(8.0f, 10.0f));
+	if (mReanim)	mReanim->PlayReanim("anim_rustle", REANIM_PLAY_ONCE_AND_HOLD, 0, 12);
 }
 
 void Bush::Update() {
 	Reanimation* mReanim = mApp->ReanimationTryToGet(mReanimID);
-	if (mReanim)
-		mReanim->Update();
+	if (mReanim)	mReanim->Update();
 }
 void Bush::Draw(Graphics* g){
-	if (mAttachmentID == ATTACHMENTID_NULL)
-		return;
-
+	if (mAttachmentID == ATTACHMENTID_NULL)		return;
 	Graphics theBushGraphics(*g);
 	MakeParentGraphicsFrame(&theBushGraphics);
 	AttachmentDraw(mAttachmentID, &theBushGraphics, false);
 
 }
 
-BushCheap::BushCheap() {
-
-}
+BushCheap::BushCheap() {}
 
 void BushCheap::BushCheapInitialize(int x, int y, int daID, bool isNight, int mRow)
 {
-	int id = (daID + 3) % 3;
-	if (isNight)
-		id += 3;
-	mId = id;
-	mDead = false;
-	mX = x;
-	mY = y;
-	mIsValid = true;
+	int id = (daID + 3) % 3;	if (isNight)	id += 3;
+	mX = x;	mY = y;	mId = id;
+
 	mRenderOrder = Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_ZOMBIE, mRow, 9);
-
-	Image* grassBushesIMAGE[] = {
-		IMAGE_BUSH3,
-		IMAGE_BUSH5,
-		IMAGE_BUSH4,
-		IMAGE_NIGHTBUSH3,
-		IMAGE_NIGHTBUSH5,
-		IMAGE_NIGHTBUSH4,
-
-	};
-
-	for (int i = 0; i < 6; i++)
-	{
-		FixPixelsOnAlphaEdgeForBlending(grassBushesIMAGE[i]);
-	}
 }
 
 void BushCheap::Draw(Graphics* g) {
-	if (!mIsValid)	return;
-
 	Image* grassBushesIMAGE[] = {
 		IMAGE_BUSH3,
 		IMAGE_BUSH5,

@@ -199,9 +199,13 @@ public:
     ReanimationID                   mBlinkReanimID;
 
     // Special Death
-    bool                            mIsAllergicToNuts = false;
-    bool                            mIsInstantDeath = false;
-    bool                            mNoCoin = false;
+    bool                            mIsAllergicToNuts;
+    bool                            mIsInstantDeath;
+    bool                            mNoCoin;
+
+   // float                           mHitPointX;
+   // sfloat                           mHitPointY;
+   // float                           mHitMagnitude;
 
 public:
     Zombie();

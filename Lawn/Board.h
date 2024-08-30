@@ -45,6 +45,7 @@ namespace Sexy
 	class WidgetManager;
 	class Image;
 	class MTRand;
+	class MemoryImage;
 }
 
 class HitResult
@@ -142,11 +143,12 @@ public:
 	int								mMaxPlayers;
 	bool							mIsVeteran = false;
 
-	Image*							mDarknessImage;
-	Image*							mDarknessDarkerImage;
+	MemoryImage*					mDarknessImage;
+	MemoryImage*					mDarknessDarkerImage;
 	bool							mUpdateDarkness;
 	int								mDarknessCounter;
-	Image*							mPreviewImage;
+
+	MemoryImage*					mPreviewImage;
 
 	int								mRoofPoleOffset;
 	int								mRoofTreeOffset;

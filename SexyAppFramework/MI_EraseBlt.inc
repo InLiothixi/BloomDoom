@@ -13,17 +13,13 @@
 				for (int x = 0; x < theSrcRect.mWidth; x++)
 				{
 					ulong src = NEXT_SRC_COLOR;
-					ulong dest = *aDestPixels;
-					
 					int a = src >> 24;	
-					int destA = dest >> 24;
 					
 					if (a != 0)
 					{
-						destA -= a;
-						if (destA < 0)
-							destA = 0;
-						*(aDestPixels++) = destA << 24;
+						int aDestAlpha = (*aDestPixels >> 24) - a;
+						if (aDestAlpha < 0)	aDestAlpha = 0;
+						*(aDestPixels++) = aDestAlpha << 24;
 					}
 					else
 						aDestPixels++;
@@ -40,72 +36,33 @@
 			int cg = theColor.mGreen;
 			int cb = theColor.mBlue;
 
-#ifdef OPTIMIZE_SOFTWARE_DRAWING
-			bool performNormalBlit = true;
-			if (cr == cg && cg == cb)
+
+			for (int y = 0; y < theSrcRect.mHeight; y++)
 			{
-				performNormalBlit = false;
-				for (int y = 0; y < theSrcRect.mHeight; y++)
-				{
-					ulong* aDestPixels = aDestPixelsRow;
+				ulong* aDestPixels = aDestPixelsRow;
 					
-					EACH_ROW;
+				EACH_ROW;
 
-					for (int x = 0; x < theSrcRect.mWidth; x++)
-					{
-						ulong src = NEXT_SRC_COLOR;
-						ulong dest = *aDestPixels;
-						
-						int a = ((src >> 24) * ca) / 255;	
-						int destA = dest >> 24;
-
-						if (a != 0)
-						{
-							destA -= a;
-							if (destA < 0)
-								destA = 0;
-							*(aDestPixels++) = destA << 24;
-						}
-						else
-							aDestPixels++;
-					}
-
-					aDestPixelsRow += mWidth;
-					aSrcPixelsRow += theImage->mWidth;
-				}
-			}
-			if (performNormalBlit)
-#endif
-			{
-				for (int y = 0; y < theSrcRect.mHeight; y++)
+				for (int x = 0; x < theSrcRect.mWidth; x++)
 				{
-					ulong* aDestPixels = aDestPixelsRow;
+					ulong src = NEXT_SRC_COLOR;
 					
-					EACH_ROW;
-
-					for (int x = 0; x < theSrcRect.mWidth; x++)
+					int a = ((src >> 24) * ca) / 255;	
+						
+					if (a != 0)
 					{
-						ulong src = NEXT_SRC_COLOR;
-						ulong dest = *aDestPixels;
-						
-						int a = ((src >> 24) * ca) / 255;
-						int destA = dest >> 24;
-						
-						if (a != 0)
-						{
-							destA -= a;
-							if (destA < 0)
-								destA = 0;
-							*(aDestPixels++) = destA << 24;
-						}
-						else
-							aDestPixels++;
+						int aDestAlpha = (*aDestPixels >> 24) - a;
+						if (aDestAlpha < 0)	aDestAlpha = 0;
+						*(aDestPixels++) = aDestAlpha << 24;
 					}
-
-					aDestPixelsRow += mWidth;
-					aSrcPixelsRow += theImage->mWidth;
+					else
+						aDestPixels++;
 				}
+
+				aDestPixelsRow += mWidth;
+				aSrcPixelsRow += theImage->mWidth;
 			}
+			
 		}
 	}
 	else
@@ -143,50 +100,22 @@
 				}						
 				else // Partially transparent
 				{
-#ifdef OPTIMIZE_SOFTWARE_DRAWING
+
 					int a = 256 - oma;
 				
 					aSrcPtr++;
-					ulong dest = *aDestPixels;
-					int destA = dest >> 24;
-					destA -= src >> 24;
-
-					if (destA < 0)
-						destA = 0;
-
-					*(aDestPixels++) = destA << 24;
+					int aDestAlpha = (*aDestPixels >> 24) - a;
+					if (aDestAlpha < 0)	aDestAlpha = 0;
+					*(aDestPixels++) = aDestAlpha << 24;
 
 					for (int i = 1; i < rl; i++)
 					{
 						ulong src = NEXT_SRC_COLOR;
-						int a2 = (src >> 24);
-
-						destA -= a2;
-						if (destA < 0)
-							destA = 0;
-
-						*(aDestPixels++) = destA << 24;
+						int a = (src >> 24);
+						int aDestAlpha =( *aDestPixels >> 24) - a;
+						if (aDestAlpha < 0)	aDestAlpha = 0;
+						*(aDestPixels++) = aDestAlpha << 24;
 					}
-#else
-					int a = 256 - oma;
-				
-					aSrcPtr++;
-					ulong dest = *aDestPixels;
-					int destA = dest >> 24;
-					*(aDestPixels++) = destA << 24;
-
-					for (int i = 1; i < rl; i++)
-					{
-						ulong src = NEXT_SRC_COLOR;
-						int a = src >> 24;
-
-						destA -= a;
-						if (destA < 0)
-							destA = 0;
-
-						*(aDestPixels++) = destA << 24;
-					}
-#endif
 				}
 				
 				aRLAlphaData += rl;

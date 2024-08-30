@@ -638,10 +638,13 @@ void Challenge::StartLevel()
 				targetReanim = REANIM_REPEATER;
 			}*/
 
-			if (rand() % 1000 == 0)
+			if (mApp->mGameMode == GAMEMODE_CHALLENGE_OPEN_FIRE)
 			{
-				targetSeed = SEED_SNOWPEA;
-				targetReanim = REANIM_SNOWPEA;
+				if (rand() % 1000 == 0)
+				{
+					targetSeed = SEED_SNOWPEA;
+					targetReanim = REANIM_SNOWPEA;
+				}
 			}
 
 			PlayerController* player = mBoard->mPlayers[i];
@@ -650,7 +653,9 @@ void Challenge::StartLevel()
 			mPlayerPlant->PlantInitialize(0, 0, targetSeed, SEED_NONE);
 
 			if (mApp->mGameMode == GAMEMODE_CHALLENGE_OPEN_FIRE)
+			{
 				mPlayerPlant->mX -= 37.5f;
+			}
 
 			mPlayerPlant->CalcRenderOrder();
 
@@ -663,7 +668,21 @@ void Challenge::StartLevel()
 			Reanimation* aHeadReanimOriginal = mApp->ReanimationGet(mPlayerPlant->mHeadReanimID);
 			aHeadReanimOriginal->ReanimationDie();
 
-			Reanimation* aBodyReanim = mApp->AddReanimation(0, 0, 0, REANIM_LAWNMOWER);
+
+			ReanimationType aReanimType = REANIM_LAWNMOWER;
+			const char* targetIdle = "anim_normal";
+			const char* targetTrack = "LawnMower_engine";
+			float offsetX = 0, offsetY = 0;
+			if (mApp->mGameMode == GAMEMODE_CHALLENGE_AIR_RAID)
+			{
+				aReanimType = REANIM_FLOWER_POT;
+				targetTrack = "Pot_top";
+				targetIdle = "anim_airraid";
+				offsetX = -4;
+				offsetY = -10;
+			}
+
+			Reanimation* aBodyReanim = mApp->AddReanimation(0, 0, 0, aReanimType);
 			aBodyReanim->mIsAttachment = true;
 			mPlayerPlant->mBodyReanimID = mApp->ReanimationGetID(aBodyReanim);
 
@@ -671,7 +690,7 @@ void Challenge::StartLevel()
 			aHeadReanim->PlayReanim("anim_head_idle", REANIM_LOOP, 0, 12);
 			mPlayerPlant->mHeadReanimID = mApp->ReanimationGetID(aHeadReanim);
 
-			ReanimatorTrackInstance* aTrackInstance = aBodyReanim->GetTrackInstanceByName("LawnMower_engine");
+			ReanimatorTrackInstance* aTrackInstance = aBodyReanim->GetTrackInstanceByName(targetTrack);
 
 			Reanimation* aSpecialReanim = mApp->AddReanimation(0, 0, 0, targetReanim);
 			mPlayerPlant->mHeadReanimID2 = mApp->ReanimationGetID(aSpecialReanim);
@@ -684,13 +703,13 @@ void Challenge::StartLevel()
 			aSpecialReanim->AssignRenderGroupToTrack("backleaf", RENDER_GROUP_HIDDEN);
 
 			AttachEffect* aAttachEffect2 = AttachReanim(aTrackInstance->mAttachmentID, aSpecialReanim, 0, 0);
-			TodScaleRotateTransformMatrix(aAttachEffect2->mOffset, 3.5, -22.25f, 0, 1, 1);
+			TodScaleRotateTransformMatrix(aAttachEffect2->mOffset, 3.5 + offsetX, -22.25f + offsetY, 0, 1, 1);
 
 			aSpecialReanim->mIsAttachment = true;
 
 			AttachEffect* aAttachEffect = AttachReanim(aTrackInstance->mAttachmentID, aHeadReanim, 0.0f, 0.0f);
-			aBodyReanim->PlayReanim("anim_normal", REANIM_LOOP, 0, 0);
-			TodScaleRotateTransformMatrix(aAttachEffect->mOffset, 8, -4.5f, 0, 1, 1);
+			aBodyReanim->PlayReanim(targetIdle, REANIM_LOOP, 0, 0);
+			TodScaleRotateTransformMatrix(aAttachEffect->mOffset, 8 + offsetX, -4.5f + offsetY, 0, 1, 1);
 
 			aHeadReanim->mIsAttachment = true;
 		}

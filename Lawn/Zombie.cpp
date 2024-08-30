@@ -20,6 +20,8 @@
 #include "../Sexy.TodLib/EffectSystem.h"
 #include "CursorObject.h"
 
+#include "../Sexy.TodLib/Definition.h"
+
 ZombieDefinition gZombieDefs[NUM_ZOMBIE_TYPES] = {  //0x69DA80
     { ZOMBIE_NORMAL,            REANIM_ZOMBIE,              1,      1,      1,      4000,   _S("ZOMBIE") },
     { ZOMBIE_FLAG,              REANIM_ZOMBIE,              1,      1,      1,      0,      _S("FLAG_ZOMBIE") },
@@ -104,7 +106,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 
     mFromWave = theFromWave;
     mRow = theRow;
-    mPosX = 780 + Rand(ZOMBIE_START_RANDOM_OFFSET); 
+    mPosX = 800 + Rand(ZOMBIE_START_RANDOM_OFFSET); 
     mPosY = GetPosYBasedOnRow(theRow);
     mVelX = 0.0f;
     mVelZ = 0.0f;
@@ -194,6 +196,9 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
     mBlinkReanimID = ReanimationID::REANIMATIONID_NULL;
 
     mPlantHeadType = SEED_NONE;
+    mNoCoin = false;
+    mIsInstantDeath = false;
+    mIsAllergicToNuts = false;
 
     for (int i = 0; i < MAX_ZOMBIE_FOLLOWERS; i++)
     {
@@ -4630,7 +4635,26 @@ void Zombie::DropHead(unsigned int theDamageFlags)
     TodParticleSystem* aParticle = mApp->AddTodParticle(aPosX, aPosY, aRenderOrder, aEffect);
     OverrideParticleColor(aParticle);
     OverrideParticleScale(aParticle);
-   
+
+    /*if (mHitPointX && mHitPointY && mHitMagnitude)
+    {
+        float hitAngle = atan2f(mHitPointY - aPosY, mHitPointX - aPosX);
+
+        for (TodListNode<ParticleEmitterID>* aNode = aParticle->mEmitterList.mHead; aNode != nullptr; aNode = aNode->mNext)
+        {
+            TodParticleEmitter* aEmitter = aParticle->mParticleHolder->mEmitters.DataArrayGet((unsigned int)aNode->mValue);
+
+            for (TodListNode<ParticleID>* aNode = aEmitter->mParticleList.mHead; aNode != nullptr; aNode = aNode->mNext)
+            {
+                TodParticle* aParticle = aEmitter->mParticleSystem->mParticleHolder->mParticles.DataArrayGet((unsigned int)aNode->mValue);
+                aParticle->mVelocity.x += -mHitMagnitude * cos(hitAngle);
+                aParticle->mVelocity.y += -mHitMagnitude * sin(hitAngle);
+            }
+
+        }
+
+    }*/
+
     if (aParticle)
     {
         if (mZombieType == ZombieType::ZOMBIE_DANCER)
@@ -6308,7 +6332,7 @@ void Zombie::AnimateChewEffect()
             mApp->PlayFoley(FoleyType::FOLEY_IGNITE);
             Reanimation* aFireReanim = mApp->AddReanimation(mPosX + 38, mPosY + 20, mRenderOrder + 1, ReanimationType::REANIM_JALAPENO_FIRE);
             aFireReanim->mAnimRate = 24.0f;
-            aFireReanim->OverrideScale(0.7f, 0.4f);
+            aFireReanim->OverrideScale(0.7f, 0.7f);
         }
         else if (aPlant->mSeedType == SEED_PLASMAWOOD) {
             TakeDamage(40, 2U);
@@ -6316,7 +6340,7 @@ void Zombie::AnimateChewEffect()
             mApp->PlayFoley(FoleyType::FOLEY_IGNITE);
             Reanimation* aFireReanim = mApp->AddReanimation(mPosX + 38, mPosY + 20, mRenderOrder + 1, ReanimationType::REANIM_PLASMA_FIRE);
             aFireReanim->mAnimRate = 24.0f;
-            aFireReanim->OverrideScale(0.7f, 0.4f);
+            aFireReanim->OverrideScale(0.7f, 0.7f);
         }
     }
 

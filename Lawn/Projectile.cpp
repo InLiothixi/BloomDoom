@@ -970,7 +970,7 @@ void Projectile::UpdateLobMotion()
 		mRotation = -PI / 2;
 	}
 
-	mVelZ += mAccZ * 2;
+	mVelZ += mAccZ;
 	if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_HIGH_GRAVITY)
 		mVelZ += mAccZ;
 
@@ -1477,7 +1477,7 @@ void Projectile::UpdateNormalMotion()
 		mShadowY = mPosY + 67.0f;
 
 	if (mIgnoreGround && mProjectileType == PROJECTILE_PEA)
-		mShadowY = mPosY + 50.0f;
+		mShadowY = mPosY + 67.0f;
 }
 
 //0x46DC70
@@ -1617,6 +1617,9 @@ void Projectile::DoImpact(Zombie* theZombie)
 		unsigned int aDamageFlags = GetDamageFlags(theZombie);
 		int daDamage = GetProjectileDef().mDamage;
 		theZombie->TakeDamage(daDamage, aDamageFlags);
+		//theZombie->mHitPointX = mX - mVelX;
+		//theZombie->mHitPointY = mY + mPosZ - mVelY - mVelZ;
+		//theZombie->mHitMagnitude = daDamage / 13.33f;
 	}
 
 	float aLastPosX = mPosX - mVelX;
@@ -1941,11 +1944,11 @@ void Projectile::Draw(Graphics* g)
 		if (FloatApproxEqual(mRotation, 0.0f) && FloatApproxEqual(aScale, 1.0f))
 		{
 			Rect aDestRect(0, 0, aCelWidth, aCelHeight);
-			if (mBackwards)
+			/*if (mBackwards)
 			{
 				aDestRect.mX += aDestRect.mWidth;
 				aDestRect.mWidth = -aDestRect.mWidth;
-			}
+			}*/
 			g->DrawImageMirror(aImage, aDestRect, aSrcRect, aMirror);
 		}
 		else
@@ -1954,11 +1957,11 @@ void Projectile::Draw(Graphics* g)
 			float aOffsetY = mPosY + mPosZ + aCelHeight * 0.5f;
 			SexyTransform2D aTransform;
 			float scaleX = aScale;
-			if (mBackwards)
+			/*if (mBackwards)
 			{
 				aOffsetX += aCelWidth;
 				scaleX = -scaleX;
-			}
+			}*/
 			TodScaleRotateTransformMatrix(aTransform, aOffsetX + mBoard->mX, aOffsetY + mBoard->mY, mRotation, scaleX, aScale);
 			TodBltMatrix(g, aImage, aTransform, g->mClipRect, Color::White, g->mDrawMode, aSrcRect);
 		}
@@ -1976,6 +1979,9 @@ void Projectile::Draw(Graphics* g)
 //0x46E8C0
 void Projectile::DrawShadow(Graphics* g)
 {
+	if (mApp->mGameMode == GAMEMODE_CHALLENGE_AIR_RAID)
+		return;
+
 	int aCelCol = 0;
 	float aScale = 1.0f;
 	float aStretch = 1.0f;

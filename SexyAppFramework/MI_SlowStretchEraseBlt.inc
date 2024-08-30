@@ -241,6 +241,7 @@
 		for (int x = 0; x < theDestRect.mWidth; x++)				
 		{
 			ulong *p = &aNewPixels[((y+1)*aTempDestWidth+x+1)*4];
+			
 			*p++;
 			*p++;
 			*p++;
@@ -248,20 +249,17 @@
 
 			if (a != 0)
 			{		
-				ulong dest = *aDestPixels;
-				int aDestAlpha = dest >> 24;
+				int aDestAlpha = (*aDestPixels >> 24) - a;		
+				if (aDestAlpha < 0)	aDestAlpha = 0;
 
-				int newAlpha = aDestAlpha - a;
-				if (newAlpha < 0)
-					newAlpha = 0;
-				*(aDestPixels++) = newAlpha << 24;				
+				DBG_ASSERTE(aDestPixels < aDestEnd);
+
+				*(aDestPixels++) = aDestAlpha << 24;			
 			}
 			else
 				aDestPixels++;
 		}
 	}
-
-
 
 	delete[] aNewPixels;
 	delete[] aNewHorzPixels;

@@ -33,6 +33,7 @@
 
 #include "System/ReanimationLawn.h"
 #include "../SexyAppFramework/MemoryImage.h"
+#include "../Sexy.TodLib/ReanimAtlas.h"
 
 #define SEXY_PERF_ENABLED
 #include "../SexyAppFramework/PerfTimer.h"
@@ -156,12 +157,10 @@ Board::Board(LawnApp* theApp)
 	mSpecialGraveStoneX = -1;
 	mSpecialGraveStoneY = -1;
 	mSunProduced = 0;
-	mDarknessImage = (Image*)mApp->mReanimatorCache->MakeBlankMemoryImage(BOARD_WIDTH + 3000, BOARD_HEIGHT + 3000);
-	mDarknessDarkerImage = (Image*)mApp->mReanimatorCache->MakeBlankMemoryImage(BOARD_WIDTH + 3000, BOARD_HEIGHT + 3000);
-	mPreviewImage = (Image*)mApp->mReanimatorCache->MakeBlankMemoryImage(BOARD_WIDTH, BOARD_HEIGHT);
 	mDarknessCounter = 0;
 	mUpdateDarkness = true;
-	
+
+	//mPreviewImage = mApp->mReanimatorCache->MakeBlankMemoryImage(BOARD_WIDTH, BOARD_HEIGHT);
 
 	for (int i = 0; i < MAX_GRID_SIZE_X; i++)
 	{
@@ -747,14 +746,12 @@ void ZombiePickerInit(ZombiePicker* theZombiePicker)
 }
 
 void Board::AnimateBush(int row) {
-	if (!mApp->Is3dAccel())
+	if (!mApp->Is3dAccel() || mApp->mGameMode == GAMEMODE_CHALLENGE_INVISIGHOUL)
 		return;
 
 	Bush* aBush = mBushList[row];
-	if (aBush && mApp->mGameMode != GAMEMODE_CHALLENGE_INVISIGHOUL)
-	{
+	if (aBush)
 		aBush->AnimateBush();
-	}
 }
 
 //0x409240
@@ -1117,6 +1114,14 @@ void Board::LoadBackgroundImages()
 	if (StageHasRain() || StageHasFog())
 	{
 		TodLoadResources("DelayLoad_Background4");
+	}
+
+	if (StageHasDarkness())
+	{
+		mDarknessImage = mApp->mReanimatorCache->MakeBlankMemoryImage(BOARD_WIDTH, BOARD_HEIGHT);
+		mDarknessDarkerImage = mApp->mReanimatorCache->MakeBlankMemoryImage(BOARD_WIDTH, BOARD_HEIGHT);
+		mDarknessImage->FillRect(Rect(0, 0, mDarknessImage->mWidth, mDarknessImage->mHeight), Color::Black, 0);
+		mDarknessDarkerImage->FillRect(Rect(0, 0, mDarknessImage->mWidth, mDarknessImage->mHeight), Color::Black, 0);
 	}
 
 	switch (mBackground)
@@ -2849,7 +2854,7 @@ Plant* Board::AddPlant(int theGridX, int theGridY, SeedType theSeedType, SeedTyp
 		mMaxSunPlants = aSunPlantsCount;  //mMaxSunPlants = max(aSunPlantsCount, mMaxSunPlants);
 	}
 
-	if (theSeedType == SEED_PLANTERN && StageHasDarkness())
+	if ((theSeedType == SEED_PLANTERN || theSeedType == SEED_PLASMAWOOD || theSeedType == SEED_TORCHWOOD || theSeedType == SEED_FIRESHROOM) && StageHasDarkness())
 	{
 		mUpdateDarkness = true;
 	}
@@ -3380,15 +3385,15 @@ ZombieType Board::PickZombieType(int theZombiePoints, int theWaveIndex, ZombiePi
 
 		if (mApp->mGameMode == GAMEMODE_CHALLENGE_POGO_PARTY && aZombieType == ZombieType::ZOMBIE_POGO)
 		{
-			aPickWeight *= 2;
+			aPickWeight *= 10;
 		}
 		else if (mApp->mGameMode == GAMEMODE_CHALLENGE_BOBSLED_BONANZA && (aZombieType == ZombieType::ZOMBIE_ZAMBONI || aZombieType == ZombieType::ZOMBIE_BOBSLED))
 		{
-			aPickWeight *= 2;
+			aPickWeight *= 10;
 		}
 		else if (mApp->mGameMode == GAMEMODE_CHALLENGE_WE_SMASH && (aZombieType == ZombieType::ZOMBIE_GARGANTUAR || aZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR))
 		{
-			aPickWeight *= 2;
+			aPickWeight *= 10;
 		}
 
 		if (mApp->mGameMode == GAMEMODE_CHALLENGE_BOMB_ALL)
@@ -4221,7 +4226,7 @@ void Board::HighlightPlantsForMouse(int theMouseX, int theMouseY)
 			}
 		}
 	}
-	else if (mApp->mGameMode == GAMEMODE_CHALLENGE_HEAT_WAVE) {
+	else if (mApp->mGameMode == GAMEMODE_CHALLENGE_HEAT_WAVE && mApp->mGameScene == SCENE_PLAYING) {
 		Plant* aPlant = SpecialPlantHitTest(theMouseX, theMouseY);
 		if (aPlant)
 			aPlant->mHighlighted = true;
@@ -5075,7 +5080,7 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 	}
 
 	if (mCursorObject->mCursorType == CursorType::CURSOR_TYPE_PLANT_FROM_GLOVE){
-		if (mApp->mGameMode == GAMEMODE_CHALLENGE_HEAT_WAVE)
+		if (mApp->mGameMode == GAMEMODE_CHALLENGE_HEAT_WAVE && mApp->mGameScene == SCENE_PLAYING)
 		{
 			MovePlant(mPlants.DataArrayTryToGet(mCursorObject->mGlovePlantID), aGridX, aGridY);
 		}
@@ -6857,11 +6862,25 @@ void Board::UpdateZombieSpawning()
 					mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_FOG_RIGORMORMIST ||
 					mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_ROOF_GRAZETHEROOF ||
 					mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_GRASS_THE_MOON ||
-					mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_WOODY_TOMBSTONE)
+					mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_WOODY_TOMBSTONE ||
+					mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_LUNACY_CADABREATH || 
+					mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_BRAIN_STORM ||
+					mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_GLOOMBLOOM)
 				{
 					if (mHugeWaveCountDown == 400)
 					{
 						mApp->mMusic->StartBurst();
+					}
+
+					if (StageHasDarkness())
+					{
+						if (mHugeWaveCountDown <= 400)
+						{
+
+							int targetValue = (int)TodAnimateCurveFloat(400, 0, mHugeWaveCountDown, 0, 550, CURVE_LINEAR);
+							if (mDarknessCounter < targetValue)
+								mDarknessCounter = targetValue;
+						}
 					}
 				}
 				else if (mApp->mMusic->mCurMusicTune == MusicTune::MUSIC_TUNE_NIGHT_MOONGRAINS )
@@ -6869,6 +6888,17 @@ void Board::UpdateZombieSpawning()
 					if (mHugeWaveCountDown == 700)
 					{
 						mApp->mMusic->StartBurst();
+					}
+
+					if (StageHasDarkness())
+					{
+						if (mHugeWaveCountDown <= 700)
+						{
+
+							int targetValue = (int)TodAnimateCurveFloat(700, 0, mHugeWaveCountDown, 0, 550, CURVE_LINEAR);
+							if (mDarknessCounter < targetValue)
+								mDarknessCounter = targetValue;
+						}
 					}
 				}
 				return;
@@ -7295,6 +7325,16 @@ void Board::UpdateGame()
 	if (mApp->mGameMode == GAMEMODE_CHALLENGE_AIR_RAID) {;
 		mChallenge->mAirRaidCLOUDTime = (mChallenge->mAirRaidCLOUDTime + 3845) % 3840;
 		mChallenge->mAirRaidSTARTime = (mChallenge->mAirRaidSTARTime + 3841) % 3840;
+	}
+
+
+	if ((CountZombiesOnScreen() >= 10 || CountPlantByType(SEED_PLANTERN) < 2) && mDarknessCounter < 550)
+	{
+		mDarknessCounter++;
+	}
+	else if (CountZombiesOnScreen() < 4 && CountPlantByType(SEED_PLANTERN) >= 2 && mDarknessCounter > 0)
+	{
+		mDarknessCounter--;
 	}
 
 	if (mMainCounter == 1 && mApp->IsFirstTimeAdventureMode())
@@ -7820,6 +7860,7 @@ void Board::Update()
 
 		mApp->mEffectSystem->Update();
 		mAdvice->Update();
+		UpdateTutorial();
 
 		if (mCobCannonCursorDelayCounter > 0)
 		{
@@ -8923,83 +8964,123 @@ void Board::DrawGameObjects(Graphics* g)
 	TodHesitationTrace("end draw");
 }
 
-void Board::DrawDarkness(Graphics* g) 
+void Board::DrawDarkness(Graphics* g)
 {
-	if (mApp->mGameScene == SCENE_PLAYING)
-	{
-		if ((CountZombiesOnScreen() >= 10 || CountPlantByType(SEED_PLANTERN) < 2) && mDarknessCounter < 550)
-		{
-			mDarknessCounter++;
-		}
-		else if (CountZombiesOnScreen() < 10 && CountPlantByType(SEED_PLANTERN) >= 2 && mDarknessCounter > 0)
-		{
-			mDarknessCounter--;
-		}
-	}
-	else
-	{
-		if (mApp->mGameMode == GAMEMODE_CHALLENGE_LIGHTS_OUT)
-		{
-			mDarknessCounter = 550;
-		}
-		else
-		{	
-			if (mDarknessCounter > 0)
-				mDarknessCounter = max(mDarknessCounter - 2, 0);
-		}
-	}
-	
 	if (mUpdateDarkness)
 	{
 		mUpdateDarkness = false;
 		Graphics aMemoryGraphics(mDarknessImage);
-		aMemoryGraphics.ClearRect(0, 0, mDarknessImage->mWidth, mDarknessImage->mHeight);
-		aMemoryGraphics.SetColor(Color::Black);
-		aMemoryGraphics.FillRect(0, 0, mDarknessImage->mWidth, mDarknessImage->mHeight);
-		aMemoryGraphics.SetLinearBlend(true);
+		mDarknessImage->FillRect(Rect(0, 0, mDarknessImage->mWidth, mDarknessImage->mHeight), Color::Black, 0);
 		aMemoryGraphics.SetDrawMode(2);
-		aMemoryGraphics.mTransX += 1000;
-		aMemoryGraphics.mTransY += 1000;
 
-		Graphics aMemoryGraphicsDarker(mDarknessDarkerImage);
-		aMemoryGraphicsDarker.ClearRect(0, 0, mDarknessDarkerImage->mWidth, mDarknessDarkerImage->mHeight);
-		aMemoryGraphicsDarker.SetColor(Color::Black);
-		aMemoryGraphicsDarker.FillRect(0, 0, mDarknessDarkerImage->mWidth, mDarknessDarkerImage->mHeight);
-		aMemoryGraphicsDarker.SetLinearBlend(true);
-		aMemoryGraphicsDarker.SetDrawMode(2);
-		aMemoryGraphicsDarker.mTransX += 1000;
-		aMemoryGraphicsDarker.mTransY += 1000;
+		if (mApp->mGameMode != GAMEMODE_CHALLENGE_LIGHTS_OUT)
+		{
+			Graphics aMemoryGraphicsDarker(mDarknessDarkerImage);
+			mDarknessDarkerImage->FillRect(Rect(0, 0, mDarknessDarkerImage->mWidth, mDarknessDarkerImage->mHeight), Color::Black, 0);
+			aMemoryGraphicsDarker.SetDrawMode(2);
 
-		Image* img = IMAGE_FLASHLIGHT_LIGHT;
 
-		Plant* aPlant = nullptr;
-		while (IteratePlants(aPlant)) {
-			if (aPlant->mSeedType == SEED_PLANTERN) {
-				aMemoryGraphics.DrawImage(img, aPlant->mX + 42.5f - img->mWidth / 2 + BOARD_ADDITIONAL_WIDTH * 2,
-					aPlant->mY + 42.5f - img->mHeight / 2 + BOARD_OFFSET_Y);
+			Image* img = IMAGE_FLASHLIGHT_LIGHT;
 
-				float scaledWidth = img->mWidth * 0.75f;
-				float scaledHeight = img->mHeight * 0.75f;
-				aMemoryGraphicsDarker.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH * 2,
-					aPlant->mY + 42.5f - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);
+			Plant* aPlant = nullptr;
+			while (IteratePlants(aPlant)) {
+				if (aPlant->mSeedType == SEED_PLANTERN) {
+					/*aMemoryGraphics.DrawImage(img, aPlant->mX + 42.5f - img->mWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - img->mHeight / 2.0f + BOARD_OFFSET_Y);
+
+					float scaledWidth = img->mWidth * 0.75f;
+					float scaledHeight = img->mHeight * 0.5f;
+					aMemoryGraphicsDarker.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);*/
+
+					float scaledWidth = img->mWidth * 1.25;
+					aMemoryGraphics.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - img->mHeight / 2 + BOARD_OFFSET_Y, scaledWidth, img->mHeight);
+
+					aMemoryGraphicsDarker.DrawImage(img, aPlant->mX + 42.5f - img->mWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - img->mHeight / 2.0f + BOARD_OFFSET_Y);
+				}
+				else if (aPlant->mSeedType == SEED_TORCHWOOD || aPlant->mSeedType == SEED_FIRESHROOM) {
+					/*aMemoryGraphics.DrawImage(img, aPlant->mX + 42.5f - img->mWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - img->mHeight / 2.0f + BOARD_OFFSET_Y);
+
+					float scaledWidth = img->mWidth * 0.75f;
+					float scaledHeight = img->mHeight * 0.5f;
+					aMemoryGraphicsDarker.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);*/
+
+					float scaledWidth = img->mWidth * 0.3125f;
+					float scaledHeight = img->mHeight * 0.25f;
+					aMemoryGraphics.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - 25 - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);
+
+				    scaledWidth = img->mWidth * 0.25f;
+					scaledHeight = img->mHeight * 0.25f;
+					aMemoryGraphicsDarker.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - 25 - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);
+				}
+				else if (aPlant->mSeedType == SEED_PLASMAWOOD) {
+					/*aMemoryGraphics.DrawImage(img, aPlant->mX + 42.5f - img->mWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - img->mHeight / 2.0f + BOARD_OFFSET_Y);
+
+					float scaledWidth = img->mWidth * 0.75f;
+					float scaledHeight = img->mHeight * 0.5f;
+					aMemoryGraphicsDarker.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);*/
+
+					float scaledWidth = img->mWidth * 0.625f;
+					float scaledHeight = img->mHeight * 0.5f;
+					aMemoryGraphics.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - 25 - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);
+
+					scaledWidth = img->mWidth * 0.5f;
+					scaledHeight = img->mHeight * 0.5f;
+					aMemoryGraphicsDarker.DrawImage(img, aPlant->mX + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH,
+						aPlant->mY + 42.5f - 25 - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);
+				}
 			}
 		}
 
 		if (mApp->mGameMode == GAMEMODE_CHALLENGE_LIGHTS_OUT)
 		{
-			float scaledWidth = img->mWidth * 0.75f;
-			float scaledHeight = img->mHeight * 0.75f;
-			aMemoryGraphics.DrawImage(img, 400 + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH * 2,
-				300 + 42.5f - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);
+			//float scaledWidth = img->mWidth * 0.75f;
+			//float scaledHeight = img->mHeight * 0.75f;
+			//aMemoryGraphics.DrawImage(img, 400 + 42.5f - scaledWidth / 2 + BOARD_ADDITIONAL_WIDTH * 2,
+			//	300 + 42.5f - scaledHeight / 2 + BOARD_OFFSET_Y, scaledWidth, scaledHeight);
+					
+			//aMemoryGraphics.DrawImage(img, 400 + 42.5f - img->mWidth / 2 + BOARD_ADDITIONAL_WIDTH * 2,
+			//	300 + 42.5f - img->mHeight / 2 + BOARD_OFFSET_Y);
 		}
+		
+	}
+	
+	int targetMax = 223;
+
+	if (mApp->IsAdventureMode() && mLevel == 59 || mApp->mGameMode == GAMEMODE_CHALLENGE_DARK_FOGGY_NIGHT)
+	{
+		targetMax = 191;
+	}
+	else if (mApp->mGameMode == GAMEMODE_CHALLENGE_LIGHTS_OUT)
+	{
+		targetMax = 255;
 	}
 
-	int targetMax = 223;
-	if (mApp->IsAdventureMode() && mLevel == 59 || mApp->mGameMode == GAMEMODE_CHALLENGE_DARK_FOGGY_NIGHT)
+	if (mLevel == 51)
+	{
+		targetMax = 64;
+	}
+	else if (mLevel == 52)
+	{
+		targetMax = 96;
+	}
+	else if (mLevel == 53)
+	{
+		targetMax = 127;
+	}
+	else if (mLevel == 54)
+	{
 		targetMax = 191;
-
-	if (mApp->mGameMode == GAMEMODE_CHALLENGE_LIGHTS_OUT)
-		targetMax = 255;
+	}
 
 	int targetAlpha = targetMax;
 
@@ -9007,35 +9088,40 @@ void Board::DrawDarkness(Graphics* g)
 		targetAlpha = TodAnimateCurveFloat(0, 550, mDarknessCounter, targetMax, 255, CURVE_LINEAR);
 
 	g->SetColorizeImages(true);
+
 	if (mApp->mGameScene == SCENE_LEVEL_INTRO)
+	{
 		targetAlpha = TodAnimateCurveFloat(6000, 7830, mCutScene->mCutsceneTime, targetMax * 0.875f, targetAlpha, CURVE_LINEAR);
+	}
 	else if (mApp->IsSurvivalMode() && mNextSurvivalStageCounter > 0)
+	{
 		targetAlpha = TodAnimateCurveFloat(500, 0, mNextSurvivalStageCounter, targetAlpha, targetMax * 0.875f, CURVE_LINEAR);
+	}
 
 	g->mColor.mAlpha = targetAlpha;
 
-	float offsetX = -1000;
-	float offsetY = -1000;
+	float offsetX = -BOARD_ADDITIONAL_WIDTH;
+	float offsetY = -BOARD_OFFSET_Y;
 
-	if (mApp->mGameMode == GAMEMODE_CHALLENGE_LIGHTS_OUT)
+	/*if (mApp->mGameMode == GAMEMODE_CHALLENGE_LIGHTS_OUT)
 	{
 		offsetX += -BOARD_ADDITIONAL_WIDTH * 2 + 60 + mCursorObject->mX;
-		offsetY += -BOARD_OFFSET_Y * 5  + mCursorObject->mY;
-	}
+		offsetY += -BOARD_OFFSET_Y * 5 + mCursorObject->mY;
+	}*/
 
 	g->mTransX += offsetX;
 	g->mTransY += offsetY;
 
-	if (mDarknessCounter > 0 && (mApp->mGameMode != GAMEMODE_CHALLENGE_LIGHTS_OUT || mApp->mGameScene == SCENE_LEVEL_INTRO))
+	if (mDarknessCounter > 0 && mApp->mGameMode != GAMEMODE_CHALLENGE_LIGHTS_OUT)
 	{
 		g->mColor.mAlpha = TodAnimateCurve(250, 550, mDarknessCounter, targetAlpha, 0, CURVE_LINEAR);
-		g->DrawImage(mDarknessImage, -BOARD_ADDITIONAL_WIDTH * 2, -BOARD_OFFSET_Y);
+		g->DrawImage(mDarknessImage, 0, 0);
 		g->mColor.mAlpha = TodAnimateCurve(0, 250, mDarknessCounter, 0, targetAlpha, CURVE_LINEAR);
-		g->DrawImage(mDarknessDarkerImage, -BOARD_ADDITIONAL_WIDTH * 2, -BOARD_OFFSET_Y);
+		g->DrawImage(mDarknessDarkerImage, 0, 0);
 	}
 	else
 	{
-		g->DrawImage(mDarknessImage, -BOARD_ADDITIONAL_WIDTH * 2, -BOARD_OFFSET_Y);
+		g->DrawImage(mDarknessImage, 0, 0);
 	}
 
 	g->mTransX -= offsetX;
@@ -11727,24 +11813,6 @@ void Board::ProcessDeleteQueue()
 		}
 	}
 
-	Bush* aBush = nullptr;
-	while (mBushes.IterateNext(aBush))
-	{
-		if (aBush->mDead)
-		{
-			mBushes.DataArrayFree(aBush);
-		}
-	}
-
-	BushCheap* aBushCheap = nullptr;
-	while (mBushesCheap.IterateNext(aBushCheap))
-	{
-		if (aBushCheap->mDead)
-		{
-			mBushesCheap.DataArrayFree(aBushCheap);
-		}
-	}
-
 	Projectile* aProjectile = nullptr;
 	while (mProjectiles.IterateNext(aProjectile))
 	{
@@ -12000,7 +12068,7 @@ bool Board::StageHasRain()
 //0x41C1C0
 int Board::LeftFogColumn()
 {
-	if (mApp->mGameMode == GAMEMODE_CHALLENGE_BLIND_FAITH)				return 4;
+	if (mApp->mGameMode == GAMEMODE_CHALLENGE_BLIND_FAITH)				return -1;
 	if (mApp->mGameMode == GAMEMODE_CHALLENGE_WEIRDMAGEDDON)			return 7;
 	if (!mApp->IsAdventureMode())										return 5;
 	if (mLevel == 31)													return 6;
@@ -12356,10 +12424,7 @@ bool Board::IterateBushes(Bush*& theBush)
 {
 	while (mBushes.IterateNext(theBush))
 	{
-		if (!theBush->mDead)
-		{
-			return true;
-		}
+		return true;
 	}
 
 	theBush = (Bush*)-1;
@@ -12370,10 +12435,7 @@ bool Board::IterateBushesCheap(BushCheap*& theBushCheap)
 {
 	while (mBushesCheap.IterateNext(theBushCheap))
 	{
-		if (!theBushCheap->mDead)
-		{
-			return true;
-		}
+		return true;
 	}
 
 	theBushCheap = (BushCheap*)-1;
@@ -12934,9 +12996,13 @@ void Board::KillAllZombiesInRadius(int theRow, int theX, int theY, int theRadius
 			if (aRowDist <= theRowRange && aRowDist >= -theRowRange && GetCircleRectOverlap(theX, theY, theRadius, aZombieRect))
 			{
 				if (theBurn && aZombie->mZombieType != ZOMBIE_GLASSDOOR)
+				{
 					aZombie->ApplyBurn();
+				}
 				else
+				{
 					aZombie->TakeDamage(1800, aZombie->mZombieType == ZOMBIE_GLASSDOOR ? 0 : 18U);
+				}
 				
 			}
 		}
@@ -13199,10 +13265,14 @@ void Board::MovePlant(Plant* thePlant, int theGridX, int theGridY)
 	PLANT_ORDER anOrder = PLANT_ORDER::PLANT_ORDER_NORMAL;
 	RenderLayer aLayer = RenderLayer::RENDER_LAYER_PLANT;
 
-	if ((thePlant->mSeedType == SeedType::SEED_FLOWERPOT || aTopPlantAtGrid->mSeedType == SeedType::SEED_FLYINGPOT || thePlant->mSeedType == SeedType::SEED_WATERPOT))
+	if ((thePlant->mSeedType == SeedType::SEED_FLOWERPOT || aTopPlantAtGrid && aTopPlantAtGrid->mSeedType == SeedType::SEED_FLYINGPOT || thePlant->mSeedType == SeedType::SEED_WATERPOT))
+	{
 		anOrder = PLANT_ORDER::PLANT_ORDER_UNDERLILYPAD;
+	}
 	else if (thePlant->mSeedType == SeedType::SEED_LILYPAD && mApp->mGameMode != GameMode::GAMEMODE_CHALLENGE_ZEN_GARDEN)
+	{
 		anOrder = PLANT_ORDER::PLANT_ORDER_LILYPAD;
+	}
 
 	thePlant->mRenderOrder = Board::MakeRenderOrder(aLayer, theGridY, anOrder * 5 - thePlant->mX + 800);
 

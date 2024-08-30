@@ -234,7 +234,6 @@ void Music::MusicInit()
 	mApp->mCompletedLoadingThreadTasks += /*原版*/3500;///*内测版*/800;
 	LoadSong(MusicFile::MUSIC_FILE_WOODY_TOMBSTONE_DRUMS, "sounds\\woodytombstone_drums.ogg");
 	mApp->mCompletedLoadingThreadTasks += /*原版*/3500;///*内测版*/800;
-
 	LoadSong(MusicFile::MUSIC_FILE_LUNACY_CADABREATH, "sounds\\lunacycadabreath.ogg");
 	mApp->mCompletedLoadingThreadTasks += /*原版*/3500;///*内测版*/800;
 
@@ -1051,11 +1050,11 @@ void Music::StartGameMusic()
 	{
 		MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_WOODY_TOMBSTONE);
 	}
-	else if (mApp->mBoard->mLevel >= 52 && mApp->mBoard->mLevel <= 54)
+	else if (mApp->IsAdventureMode()  && mApp->mPlayerInfo->GetLevel() >= 51 && mApp->mPlayerInfo->GetLevel() <= 54)
 	{
 		MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_LUNACY_CADABREATH);
 	}
-	else if (mApp->mBoard->mLevel == 55 || mApp->mBoard->StageHasRoof() && mApp->mBoard->StageIsNight() && mApp->mBoard->StageHasDarkness() && mApp->mBoard->StageHasRain())
+	else if (mApp->IsAdventureMode()  && mApp->mPlayerInfo->GetLevel() == 55 || mApp->mBoard->StageHasRoof() && mApp->mBoard->StageIsNight() && mApp->mBoard->StageHasDarkness() && mApp->mBoard->StageHasRain())
 	{
 		MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_BRAIN_STORM);
 	}

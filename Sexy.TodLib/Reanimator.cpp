@@ -271,7 +271,7 @@ bool ReanimationLoadDefinition(const SexyString& theFileName, ReanimatorDefiniti
 				aPrevText = aTransform.mText;
 		}
 
-		
+
 	}
 	return true;
 }
@@ -421,7 +421,7 @@ void Reanimation::ReanimationInitialize(float theX, float theY, ReanimatorDefini
 	mDefinition = theDefinition;
 	mAnimRate = theDefinition->mFPS;
 	mLastFrameTime = -1.0f;
-	TOD_ASSERT(mDefinition!=0);
+	TOD_ASSERT(mDefinition != 0);
 	if (theDefinition->mTrackCount != 0)
 	{
 		mFrameCount = mDefinition->mTracks[0].mTransformCount;
@@ -577,7 +577,7 @@ void Reanimation::GetCurrentTransform(int theTrackIndex, ReanimatorTransform* th
 	ReanimatorFrameTime aFrameTime;
 	GetFrameTime(&aFrameTime);
 	GetTransformAtTime(theTrackIndex, theTransformCurrent, &aFrameTime);  // 结合两帧之间的自然补间取得基础变换
-	
+
 	ReanimatorTrackInstance* aTrack = &mTrackInstances[theTrackIndex];
 	if (FloatRoundToInt(theTransformCurrent->mFrame) >= 0 && aTrack->mBlendCounter > 0)  // 若当前不为空白帧且轨道处于变换混合过程中
 	{
@@ -664,7 +664,7 @@ void Reanimation::ReanimBltMatrix(Graphics* g, Image* theImage, SexyMatrix3& the
 		g->SetClipRect(aOldClipRect);  // 还原裁剪矩形
 		g->SetColorizeImages(false);
 	}
-	else{
+	else {
 		TodBltMatrix(g, theImage, theTransform, theClipRect, theColor, theDrawMode, theSrcRect);
 	}
 }
@@ -925,7 +925,7 @@ void Reanimation::DrawRenderGroup(Graphics* g, int theRenderGroup)
 }
 
 void Reanimation::Draw(Graphics* g)
-{ 
+{
 	DrawRenderGroup(g, RENDER_GROUP_NORMAL);
 }
 
@@ -1087,12 +1087,12 @@ void Reanimation::ReanimationDie()
 }
 
 void Reanimation::SetShakeOverride(const char* theTrackName, float theShakeAmount)
-{ 
+{
 	GetTrackInstanceByName(theTrackName)->mShakeOverride = theShakeAmount;
 }
 
-void Reanimation::SetPosition(float theX, float theY) 
-{ 
+void Reanimation::SetPosition(float theX, float theY)
+{
 	mOverlayMatrix.m02 = theX;
 	mOverlayMatrix.m12 = theY;
 }
@@ -1351,7 +1351,7 @@ void Reanimation::ParseAttacherTrack(const ReanimatorTransform& theTransform, At
 		const char* aTagEnds = strstr(aTags + 1, "]");
 		if (aTagEnds == nullptr)  // 如果没有右中括号
 			break;
-		
+
 		std::string aCode(aTags + 1, aTagEnds - aTags - 1);  // 取中括号内的文本
 		if (sscanf_s(aCode.c_str(), "%f", &theAttacherInfo.mAnimRate) != 1)  // 尝试将文本作为浮点数扫描，如果扫描成功则将结果作为动画速率
 		{

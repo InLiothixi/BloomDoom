@@ -6,7 +6,7 @@
 #include "../Resources.h"
 #include "System/ReanimationLawn.h"
 #include "../Sexy.TodLib/Reanimator.h"
-#include "../SexyAppFramework/Image.h"
+#include "../SexyAppFramework/MemoryImage.h"
 
 PlayerController::PlayerController() {
 }

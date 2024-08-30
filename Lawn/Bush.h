@@ -15,7 +15,6 @@ class Bush : public GameObject
 public:
     ReanimationID           mReanimID;
     AttachmentID            mAttachmentID;
-    bool                    mDead;
     int                     mId;
 
 public:
@@ -29,10 +28,7 @@ public:
 class BushCheap : public GameObject
 {
 public:
-    ReanimationID           mReanimID;
-    bool                    mDead;
     int                     mId;
-    bool                    mIsValid = false;
 
 public:
     BushCheap();

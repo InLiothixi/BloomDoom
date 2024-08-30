@@ -5153,7 +5153,7 @@ float PlantDrawHeightOffset(Board* theBoard, Plant* thePlant, SeedType theSeedTy
         doFloating = true;
     }
     
-    if (thePlant && (thePlant->mSeedType == SEED_SHOOTINGSTAR || thePlant->mSeedType == SEED_CHERRYBOMB || thePlant->mSeedType == SEED_FLYINGPOT || Plant::IsFlying(thePlant->mSeedType) && thePlant->mSeedType != SEED_INSTANTCOFFEE)) {
+    if (thePlant && (thePlant->mSeedType == SEED_SHOOTINGSTAR || thePlant->mSeedType == SEED_CHERRYHOVERBOMB || thePlant->mSeedType == SEED_FLYINGPOT || Plant::IsFlying(thePlant->mSeedType) && thePlant->mSeedType != SEED_INSTANTCOFFEE)) {
         if (thePlant->mSquished) {
             return 0;
         }
@@ -5187,7 +5187,7 @@ float PlantDrawHeightOffset(Board* theBoard, Plant* thePlant, SeedType theSeedTy
         }
     }
 
-    if (thePlant && (thePlant->mSeedType == SEED_SHOOTINGSTAR || thePlant->mSeedType == SEED_CHERRYBOMB || thePlant->mSeedType == SEED_FLYINGPOT || Plant::IsFlying(thePlant->mSeedType) && thePlant->mSeedType != SEED_INSTANTCOFFEE))
+    if (thePlant && (thePlant->mSeedType == SEED_SHOOTINGSTAR || thePlant->mSeedType == SEED_CHERRYHOVERBOMB || thePlant->mSeedType == SEED_FLYINGPOT || Plant::IsFlying(thePlant->mSeedType) && thePlant->mSeedType != SEED_INSTANTCOFFEE))
     {
         highFloating = true;
     }
@@ -5514,6 +5514,9 @@ void Plant::DrawShadow(Sexy::Graphics* g, float theOffsetX, float theOffsetY)
         mOnBungeeState == PlantOnBungeeState::RISING_WITH_BUNGEE)
         return;
 
+    if (mApp->mGameMode == GAMEMODE_CHALLENGE_AIR_RAID)
+        return;
+
     if (Plant::IsFlying(mSeedType))
     {
         if (IsOnBoard()) {
@@ -5767,55 +5770,6 @@ void Plant::Draw(Graphics* g)
     if (mIceTrapCounter > 0) {
         TodDrawImageScaledF(g, IMAGE_ICETRAP2, (!mEnemy ? 73 : 12), 50 + aOffsetY, (!mEnemy ? -1.0f : 1.0f), 1.0f);
     }
-
-    /*if (IsOnBoard() && mSeedType == SEED_LILYPAD && mBoard && mBoard->mPlantRow[mRow] == PLANTROW_POOL) {
-        Graphics reflection(*g);
-        reflection.mTransY = 42.5f;
-        reflection.mColor.mAlpha = 64;
-        reflection.mScaleY = -1;
-
-
-        Plant* mNormalPlant = mBoard->GetTopPlantAt(mPlantCol, mRow, TOPPLANT_DIGGING_ORDER);
-        if (mNormalPlant && mNormalPlant != this)
-        {
-            int aOffsetX, aOffsetY, aWidth, aHeight;
-            mApp->mReanimatorCache->GetPlantImageSize(mSeedType, aOffsetX, aOffsetY, aWidth, aHeight);
-            aWidth += 120;
-            aHeight += 120;
-            MemoryImage* aMemoryImage = mApp->mReanimatorCache->MakeBlankMemoryImage(aWidth, aHeight);
-            Graphics aMemoryGraphics(aMemoryImage);
-            aMemoryGraphics.SetLinearBlend(true);
-
-            aMemoryGraphics.mTransX -= mX - mNormalPlant->mX - 60;
-            aMemoryGraphics.mTransY -= mY - mNormalPlant->mY - 60;
-
-            if (mNormalPlant->BeginDraw(&aMemoryGraphics)) {
-                mNormalPlant->Draw(&aMemoryGraphics);
-                mNormalPlant->EndDraw(&aMemoryGraphics);
-            }
-
-            if (!mApp->Is3dAccel() && reflection.mScaleX == 1.0f && reflection.mScaleY == 1.0f)
-                reflection.DrawImage(aMemoryImage, mX - mNormalPlant->mX + 15 - 60 + aOffsetX, mY +- mNormalPlant->mY + 20 - 60 + aOffsetY, aWidth, aHeight);
-            else
-                TodDrawImageScaledF(&reflection, aMemoryImage, mX - mNormalPlant->mX + 15 - 60 + aOffsetX * reflection.mScaleX, mY - mNormalPlant->mY + 20 - 60 + aOffsetY * reflection.mScaleY, reflection.mScaleX, reflection.mScaleY);
-
-            aMemoryImage->DeleteSWBuffers();
-            aMemoryImage->Delete3DBuffers();
-            aMemoryImage->DeleteExtraBuffers();
-            aMemoryImage->DeleteNativeData();
-            delete aMemoryImage;
-            aMemoryImage = nullptr;
-        }
-
-        Plant* mPumpkin = mBoard->GetTopPlantAt(mPlantCol, mRow, TOPPLANT_ONLY_PUMPKIN);
-        if (mPumpkin && mPumpkin != this)
-        {
-            if (mPumpkin->BeginDraw(&aMemoryGraphics)) {
-                mPumpkin->Draw(&aMemoryGraphics);
-                mPumpkin->EndDraw(&aMemoryGraphics);
-            }
-        }
-    }*/
 
     int aImageIndex = mFrame;
     Image* aPlantImage = Plant::GetImage(mSeedType);
@@ -6942,7 +6896,6 @@ void Plant::Fire(void* theTarget, int theRow, PlantWeapon thePlantWeapon)
     }
 
     if (mIsPlayer) {
-        int offAvg = (mSeedType == SEED_GATLINGPEA ? 34 : 24);
         int aOffsetX, aOffsetY;
 
         Reanimation* aHeadReanim = mApp->ReanimationTryToGet(mHeadReanimID);
@@ -6959,13 +6912,19 @@ void Plant::Fire(void* theTarget, int theRow, PlantWeapon thePlantWeapon)
 
         ReanimatorTransform aTransform;
         aHeadReanim->GetCurrentTransform(aTrackIndex, &aTransform);
-        aOffsetX = aTransform.mTransX;
-        aOffsetY = aTransform.mTransY;
+        aOffsetX = aTransform.mTransX + 8;
+        aOffsetY = aTransform.mTransY - 4.5f;
+
+        if (mApp->mGameMode == GAMEMODE_CHALLENGE_AIR_RAID)
+        {
+            aOffsetX -= 4;
+            aOffsetY -= 10;
+        }
 
         if (mEnemy)
-            aOriginX = mX - aOffsetX - offAvg;
+            aOriginX = mX - aOffsetX - 34;
         else
-            aOriginX = mX + aOffsetX + offAvg;
+            aOriginX = mX + aOffsetX + 34;
         aOriginY = mY + aOffsetY - 33;
     }
 
@@ -7044,7 +7003,7 @@ void Plant::Fire(void* theTarget, int theRow, PlantWeapon thePlantWeapon)
         aProjectile->mMotionType = ProjectileMotion::MOTION_LOBBED;
         aProjectile->mVelX = aRangeX / 120.0f;
         aProjectile->mVelY = 0.0f;
-        aProjectile->mVelZ = aRangeY / 120.0f - 14;
+        aProjectile->mVelZ = aRangeY / 120.0f - 7.0f;
         aProjectile->mAccZ = 0.115f;
     }
     else if (mSeedType == SeedType::SEED_SLINGPEA)
@@ -7106,7 +7065,7 @@ void Plant::Fire(void* theTarget, int theRow, PlantWeapon thePlantWeapon)
         aProjectile->mMotionType = ProjectileMotion::MOTION_LOBBED;
         aProjectile->mVelX = aRangeX / 120.0f;
         aProjectile->mVelY = aRangeY / 120.0f;
-        aProjectile->mVelZ = aRangeZ / 120.0f - 14;
+        aProjectile->mVelZ = aRangeZ / 120.0f - 7.0f;
         aProjectile->mAccZ = 0.115f;
     }
     else if (mSeedType == SeedType::SEED_THREEPEATER)
@@ -7457,7 +7416,7 @@ void Plant::Die()
             aPotReanim->mAnimRate = RandRangeFloat(10.0f, 15.0f);
         }
 
-        if (mSeedType == SEED_PLANTERN && mBoard->StageHasDarkness())
+        if ((mSeedType == SEED_PLANTERN || mSeedType == SEED_PLASMAWOOD || mSeedType == SEED_TORCHWOOD || mSeedType == SEED_FIRESHROOM) && mBoard->StageHasDarkness())
         {
             mBoard->mUpdateDarkness = true;
         }
